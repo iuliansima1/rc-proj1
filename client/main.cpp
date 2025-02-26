@@ -69,8 +69,6 @@ int main(int argc, char * argv[])
         if (sbyteCount == SOCKET_ERROR) {
             std::cout << "Client send error: " << WSAGetLastError() << std::endl;
             return -1;
-        } else {
-            std::cout << "Client: Sent " << sbyteCount << " bytes" << std::endl;
         }
 
         // Receiving data from the server
@@ -80,7 +78,7 @@ int main(int argc, char * argv[])
             std::cout << "Client recv error: " << WSAGetLastError() << std::endl;
             return 0;
         } else {
-            std::cout << "Client: Received data: " << receiveBuffer << std::endl;
+            std::cout << "Server response: " << receiveBuffer << std::endl;
         }
     }
     close(clientSocket);
