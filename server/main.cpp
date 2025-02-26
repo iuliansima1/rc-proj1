@@ -2,18 +2,54 @@
 // socket programmin
 #define _WIN32_WINNT _WIN32_WINNT_WIN8 // Windows 8.0
 #define WIN32_LEAN_AND_MEAN
-
+#include <bits/stdc++.h>
 #include <cstring>
 #include <iostream>
 #include <Ws2tcpip.h>
 #include <winsock2.h>
 #include <unistd.h>
+#include <windows.h>
+#include <map>
+
+#define BUFFER_SIZE 1024
 
 using namespace std;
 
+map<SOCKET, sockaddr_in> sockets_map;
+
+DWORD WINAPI handle_client(LPVOID client_socket_ptr) {
+    SOCKET client_socket = *(SOCKET*)client_socket_ptr;
+    char buffer[BUFFER_SIZE];
+
+    while (true) {
+        memset(buffer, 0, BUFFER_SIZE);
+        int bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
+
+        if (bytes_received <= 0) {
+            printf("Client IP:%d.%d.%d.%d:%d disconnected\n",
+              int(sockets_map[client_socket].sin_addr.s_addr&0xFF),
+              int((sockets_map[client_socket].sin_addr.s_addr&0xFF00)>>8),
+              int((sockets_map[client_socket].sin_addr.s_addr&0xFF0000)>>16),
+              int((sockets_map[client_socket].sin_addr.s_addr&0xFF000000)>>24), (int) ntohs(sockets_map[client_socket].sin_port));
+            break;
+        }
+
+        std::cout << "Received: " << buffer << std::endl;
+        std::cout << "From: "<<int(sockets_map[client_socket].sin_addr.s_addr&0xFF)<<"."<<
+        int((sockets_map[client_socket].sin_addr.s_addr&0xFF00)>>8)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF0000)>>16)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF000000)>>24)<<
+        ":"<<(int) ntohs(sockets_map[client_socket].sin_port) << std::endl;
+
+        // Echo message back to client
+        send(client_socket, "Message delivered", 200, 0);
+    }
+
+    closesocket(client_socket);
+    return 0;
+}
 int main()
 {
     // Initialize WSA variables
+
     WSADATA wsaData;
     int wsaerr;
     WORD wVersionRequested = MAKEWORD(2, 2);
@@ -58,44 +94,27 @@ int main()
     } else {
         std::cout << "listen() is OK! I'm waiting for new connections..." << std::endl;
     }
+
+
     while(true) {
         SOCKET acceptSocket;
         sockaddr_in client_addr;
         int clen = 200;
         acceptSocket = accept(serverSocket, (struct sockaddr *)&client_addr, &clen);
-
-        // Check for successful connection
-        if (acceptSocket == INVALID_SOCKET) {
-            std::cout << "accept failed: " << WSAGetLastError() << std::endl;
-            WSACleanup();
-            return -1;
+        sockets_map[acceptSocket] = client_addr;
+        printf("Connection from IP:%d.%d.%d.%d:%d accepted\n",
+          int(client_addr.sin_addr.s_addr&0xFF),
+          int((client_addr.sin_addr.s_addr&0xFF00)>>8),
+          int((client_addr.sin_addr.s_addr&0xFF0000)>>16),
+          int((client_addr.sin_addr.s_addr&0xFF000000)>>24), (int) ntohs(client_addr.sin_port));
+        HANDLE thread = CreateThread(NULL, 0, handle_client, &acceptSocket, 0, NULL);
+        if (thread == NULL) {
+            std::cerr << "Failed to create thread!" << std::endl;
+            closesocket(acceptSocket);
         } else {
-            while(true) {
-                char receiveBuffer[200];
-                int rbyteCount = recv(acceptSocket, receiveBuffer, 200, 0);
-                if (rbyteCount < 0) {
-                    if(WSAGetLastError() != 10054 ) std::cout << "Server recv error: " << WSAGetLastError() << std::endl;
-                    else close(acceptSocket);
-                    break;
-                } else if(rbyteCount != 0 && strlen(receiveBuffer) > 1) {
-                    std::cout << "Received data: " << receiveBuffer << std::endl;
-                    printf("IP:%d.%d.%d.%d | Port: %d\n",
-                      int(client_addr.sin_addr.s_addr&0xFF),
-                      int((client_addr.sin_addr.s_addr&0xFF00)>>8),
-                      int((client_addr.sin_addr.s_addr&0xFF0000)>>16),
-                      int((client_addr.sin_addr.s_addr&0xFF000000)>>24), (int) ntohs(client_addr.sin_port));
-
-                }
-
-                int sbyteCount = send(acceptSocket, "Message delivered", 200, 0);
-                if (sbyteCount == SOCKET_ERROR) {
-                    std::cout << "Server send error: " << WSAGetLastError() << std::endl;
-                    return -1;
-                }
-            }
+            CloseHandle(thread);
         }
     }
 
-    // Receive data from the client
     return 0;
 }
