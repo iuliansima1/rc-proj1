@@ -1,4 +1,4 @@
-<title>Server - Client First Project<br/></title>
+<h1>Server - Client First Project<br/></h1>
 Server should be started first<br/>
 Any client can connect to the server<br/>
 To start the client use client.exe ip port or just client.exe<br/>
