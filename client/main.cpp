@@ -34,7 +34,6 @@ int main(int argc, char * argv[])
     clientSocket = INVALID_SOCKET;
     clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    // Check for socket creation success
     if (clientSocket == INVALID_SOCKET) {
         std::cout << "Error at socket(): " << WSAGetLastError() << std::endl;
         WSACleanup();
@@ -45,8 +44,8 @@ int main(int argc, char * argv[])
 
     sockaddr_in clientService;
     clientService.sin_family = AF_INET;
-    clientService.sin_addr.s_addr = inet_addr(ipaddr);  // Replace with the server's IP address
-    clientService.sin_port = htons(port);  // Use the same port as the server
+    clientService.sin_addr.s_addr = inet_addr(ipaddr);  
+    clientService.sin_port = htons(port);  
 
     // Use the connect function
     if (connect(clientSocket, reinterpret_cast<SOCKADDR*>(&clientService), sizeof(clientService)) == SOCKET_ERROR) {
