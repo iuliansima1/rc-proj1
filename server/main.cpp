@@ -1,6 +1,5 @@
-// C++ program to show the example of server application in
-// socket programmin
-#define _WIN32_WINNT _WIN32_WINNT_WIN8 // Windows 8.0
+
+#define _WIN32_WINNT _WIN32_WINNT_WIN8 
 #define WIN32_LEAN_AND_MEAN
 #include <bits/stdc++.h>
 #include <cstring>
@@ -39,7 +38,7 @@ DWORD WINAPI handle_client(LPVOID client_socket_ptr) {
         int((sockets_map[client_socket].sin_addr.s_addr&0xFF00)>>8)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF0000)>>16)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF000000)>>24)<<
         ":"<<(int) ntohs(sockets_map[client_socket].sin_port) << std::endl;
 
-        // Echo message back to client
+        // Send confirmation of deliver back to the client
         send(client_socket, "Message delivered", 200, 0);
     }
 
@@ -65,7 +64,6 @@ int main()
     serverSocket = INVALID_SOCKET;
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    // Check for socket creation success
     if (serverSocket == INVALID_SOCKET) {
         std::cout << "Error at socket(): " << WSAGetLastError() << std::endl;
         WSACleanup();
@@ -77,8 +75,8 @@ int main()
     // Bind the socket to an IP address and port number
     sockaddr_in service;
     service.sin_family = AF_INET;
-    service.sin_addr.s_addr = inet_addr("127.0.0.1");  // Replace with your desired IP address
-    service.sin_port = htons(55555);  // Choose a port number
+    service.sin_addr.s_addr = inet_addr("127.0.0.1");  
+    service.sin_port = htons(55555); 
 
     // Use the bind function
     if (bind(serverSocket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR) {
