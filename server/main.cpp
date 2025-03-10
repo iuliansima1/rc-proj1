@@ -1,5 +1,5 @@
 
-#define _WIN32_WINNT _WIN32_WINNT_WIN8 
+#define _WIN32_WINNT _WIN32_WINNT_WIN8
 #define WIN32_LEAN_AND_MEAN
 #include <bits/stdc++.h>
 #include <cstring>
@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <windows.h>
 #include <map>
+#include <string>
 
 #define BUFFER_SIZE 1024
 
@@ -36,10 +37,22 @@ DWORD WINAPI handle_client(LPVOID client_socket_ptr) {
         std::cout << "Received: " << buffer << std::endl;
         std::cout << "From: "<<int(sockets_map[client_socket].sin_addr.s_addr&0xFF)<<"."<<
         int((sockets_map[client_socket].sin_addr.s_addr&0xFF00)>>8)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF0000)>>16)<<"."<<int((sockets_map[client_socket].sin_addr.s_addr&0xFF000000)>>24)<<
-        ":"<<(int) ntohs(sockets_map[client_socket].sin_port) << std::endl;
+        ":"<<(int) ntohs(sockets_map[client_socket].sin_port) << " To: 55555"<< std::endl;
+        char return_buffer[200];
+        char port_data[20];
+        sprintf(port_data, "%d", (int) ntohs(sockets_map[client_socket].sin_port));
+
+        return_buffer[0] = '\0';
+        strcat(return_buffer, "Message '");
+        strcat(return_buffer, buffer);
+        strcat(return_buffer, "' received(From: 55555, To: ");
+        strcat(return_buffer, port_data);
+        strcat(return_buffer, ")");
+
+
 
         // Send confirmation of deliver back to the client
-        send(client_socket, "Message delivered", 200, 0);
+        send(client_socket, return_buffer, 200, 0);
     }
 
     closesocket(client_socket);
@@ -75,8 +88,8 @@ int main()
     // Bind the socket to an IP address and port number
     sockaddr_in service;
     service.sin_family = AF_INET;
-    service.sin_addr.s_addr = inet_addr("127.0.0.1");  
-    service.sin_port = htons(55555); 
+    service.sin_addr.s_addr = inet_addr("127.0.0.1");
+    service.sin_port = htons(55555);
 
     // Use the bind function
     if (bind(serverSocket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR) {
