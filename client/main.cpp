@@ -44,8 +44,8 @@ int main(int argc, char * argv[])
 
     sockaddr_in clientService;
     clientService.sin_family = AF_INET;
-    clientService.sin_addr.s_addr = inet_addr(ipaddr);  
-    clientService.sin_port = htons(port);  
+    clientService.sin_addr.s_addr = inet_addr(ipaddr);
+    clientService.sin_port = htons(port);
 
     // Use the connect function
     if (connect(clientSocket, reinterpret_cast<SOCKADDR*>(&clientService), sizeof(clientService)) == SOCKET_ERROR) {
